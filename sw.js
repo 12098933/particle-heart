@@ -1,4 +1,4 @@
-const CACHE_NAME = "particle-heart-runtime-v3";
+const CACHE_NAME = "particle-heart-runtime-v4";
 const RUNTIME_PATHS = [
   "/vision_bundle.mjs",
   "/hand_landmarker.task",
@@ -26,14 +26,18 @@ function isRuntimeRequest(url) {
     && RUNTIME_PATHS.some((path) => url.pathname.endsWith(path) || url.pathname.includes(path));
 }
 
-async function cacheFirst(request) {
+async function cacheFirst(event, request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
 
   const response = await fetch(request);
   if (response.ok) {
-    await cache.put(request, response.clone());
+    event.waitUntil(
+      cache.put(request, response.clone()).catch((error) => {
+        console.warn("Runtime cache write failed.", error);
+      })
+    );
   }
   return response;
 }
@@ -42,5 +46,5 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (!isRuntimeRequest(url)) return;
-  event.respondWith(cacheFirst(event.request));
+  event.respondWith(cacheFirst(event, event.request));
 });
