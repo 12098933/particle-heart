@@ -48,6 +48,7 @@ let recoveryPromise = null;
 let detectorDelegate = "CPU";
 let preferCpuDelegate = false;
 let cpuFallbackAttempted = false;
+let runtimePreloadPromise = null;
 let detectionWorker = null;
 let workerReady = false;
 let workerBusy = false;
@@ -109,6 +110,65 @@ function reportGestureProblem(title, message) {
       linkHref: window.location.href
     }
   }));
+}
+
+async function fetchGestureAsset(url, label) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    try {
+      setGestureLabel(`FETCH ${label}`, false);
+      const response = await fetch(url, {
+        cache: "reload",
+        signal: controller.signal
+      });
+      if (!response.ok) {
+        throw new Error(`${label} HTTP ${response.status}`);
+      }
+      const body = await response.arrayBuffer();
+      if (!body.byteLength) {
+        throw new Error(`${label} EMPTY_RESPONSE`);
+      }
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) {
+        await new Promise((resolve) => window.setTimeout(resolve, 450 * attempt));
+      }
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+  throw lastError || new Error(`${label} PRELOAD_FAILED`);
+}
+
+function preloadGestureRuntime() {
+  if (runtimePreloadPromise) return runtimePreloadPromise;
+  const bundleUrl = new URL("./vision_bundle.mjs", import.meta.url).href;
+  const wasmBaseUrl = new URL("./wasm", import.meta.url);
+  const simdProbe = new Uint8Array([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0,
+    10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11
+  ]);
+  let supportsSimd = false;
+  try {
+    supportsSimd = WebAssembly.validate(simdProbe);
+  } catch {
+    supportsSimd = false;
+  }
+  const wasmName = supportsSimd ? "vision_wasm_internal" : "vision_wasm_nosimd_internal";
+
+  runtimePreloadPromise = Promise.all([
+    fetchGestureAsset(bundleUrl, "RUNTIME"),
+    fetchGestureAsset(new URL(`./${wasmName}.js`, wasmBaseUrl).href, "LOADER"),
+    fetchGestureAsset(new URL(`./${wasmName}.wasm`, wasmBaseUrl).href, "WASM"),
+    fetchGestureAsset(new URL("./hand_landmarker.task", import.meta.url).href, "MODEL")
+  ]).catch((error) => {
+    runtimePreloadPromise = null;
+    console.warn("[gesture] Runtime preload failed.", error);
+  });
+  return runtimePreloadPromise;
 }
 
 async function createLandmarker() {
@@ -256,6 +316,7 @@ function ensureDetectionWorker() {
 
 async function prepareDetectionEngine() {
   try {
+    await preloadGestureRuntime();
     await ensureDetectionWorker();
     detectionMode = "worker";
   } catch (error) {
