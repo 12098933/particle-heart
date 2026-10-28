@@ -1,0 +1,3300 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050203">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Particle Heart">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050203'/%3E%3Cpath d='M32 50C16 39 10 31 12 22c2-9 13-12 20-5 7-7 18-4 20 5 2 9-4 17-20 28Z' fill='%23ff6040'/%3E%3C/svg%3E">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>Particle Heart · Merry Christmas</title>
+  <style>
+    :root {
+      --bg: #050203;
+      --cream: #fff6e7;
+      --muted: rgba(255, 246, 231, 0.58);
+      --faint: rgba(255, 246, 231, 0.18);
+      --line: rgba(255, 208, 139, 0.2);
+      --ember: #ff5a32;
+      --gold: #ffc66b;
+      --red: #d71935;
+      --panel: rgba(16, 7, 8, 0.93);
+      --radius: 8px;
+      --safe-top: max(22px, env(safe-area-inset-top));
+      --safe-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 320px;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    body {
+      color: var(--cream);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 4px;
+    }
+
+    .lock-screen {
+      position: fixed;
+      z-index: 200;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      color: var(--cream);
+      background:
+        radial-gradient(circle at 50% 44%, rgba(126, 19, 26, 0.24), transparent 34%),
+        radial-gradient(circle at 18% 82%, rgba(255, 169, 81, 0.08), transparent 28%),
+        #050203;
+      transition: opacity 700ms ease, visibility 700ms ease;
+    }
+
+    .lock-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.25;
+      background-image:
+        radial-gradient(circle at 12% 17%, rgba(255, 223, 174, 0.8) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 74% 9%, rgba(255, 126, 78, 0.7) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 32% 78%, rgba(255, 238, 205, 0.6) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 89% 69%, rgba(255, 198, 107, 0.72) 0 1px, transparent 1.5px);
+      background-size: 190px 180px, 270px 240px, 230px 260px, 310px 220px;
+    }
+
+    .lock-screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.52), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.52)),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.42), transparent 24%, transparent 78%, rgba(0, 0, 0, 0.34));
+    }
+
+    .lock-orbit {
+      position: absolute;
+      z-index: 1;
+      width: min(68vw, 680px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(255, 205, 134, 0.14);
+      border-radius: 50%;
+      transform: rotateX(68deg) rotateZ(0deg);
+      animation: lock-orbit-spin 18s linear infinite;
+    }
+
+    .lock-orbit::before,
+    .lock-orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .lock-orbit::before {
+      inset: 13%;
+      border: 1px dashed rgba(255, 126, 78, 0.22);
+    }
+
+    .lock-orbit::after {
+      top: 50%;
+      left: -4px;
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      box-shadow: 0 0 18px rgba(255, 194, 100, 0.8);
+    }
+
+    @keyframes lock-orbit-spin {
+      to { transform: rotateX(68deg) rotateZ(360deg); }
+    }
+
+    .lock-panel {
+      position: relative;
+      z-index: 3;
+      width: min(390px, 100%);
+      padding: 30px 30px 25px;
+      text-align: center;
+      background: rgba(15, 7, 8, 0.76);
+      border: 1px solid rgba(255, 215, 166, 0.18);
+      border-radius: var(--radius);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(20px);
+      animation: lock-panel-in 900ms cubic-bezier(0.18, 0.8, 0.2, 1) both;
+    }
+
+    .lock-panel:focus {
+      outline: none;
+    }
+
+    @keyframes lock-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.95);
+        filter: blur(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    .lock-emblem {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 19px;
+      display: grid;
+      place-items: center;
+      color: #1b0908;
+      background: linear-gradient(145deg, #ffe0a4, #efb94f);
+      border-radius: 50%;
+      box-shadow: 0 0 0 9px rgba(255, 194, 100, 0.06), 0 0 36px rgba(255, 121, 65, 0.22);
+    }
+
+    .lock-emblem::after {
+      content: "";
+      position: absolute;
+      inset: -14px;
+      border: 1px solid rgba(255, 207, 138, 0.16);
+      border-radius: 50%;
+      animation: lock-pulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes lock-pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.92); }
+      50% { opacity: 0.75; transform: scale(1.06); }
+    }
+
+    .lock-emblem svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    .lock-eyebrow {
+      margin: 0 0 6px;
+      color: rgba(255, 208, 139, 0.55);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 8px;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .lock-panel h1 {
+      margin: 0;
+      font-family: "Songti SC", "SimSun", serif;
+      font-size: 25px;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .lock-subtitle {
+      margin: 8px 0 20px;
+      color: rgba(255, 246, 231, 0.44);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .pin-dots {
+      display: flex;
+      justify-content: center;
+      gap: 11px;
+      min-height: 18px;
+      margin: 0 auto 8px;
+    }
+
+    .pin-dot {
+      width: 9px;
+      height: 9px;
+      background: transparent;
+      border: 1px solid rgba(255, 221, 177, 0.34);
+      border-radius: 50%;
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .pin-dot.is-filled {
+      background: var(--gold);
+      border-color: var(--gold);
+      box-shadow: 0 0 11px rgba(255, 198, 107, 0.5);
+      transform: scale(1.14);
+    }
+
+    .lock-message {
+      min-height: 18px;
+      margin: 0 0 11px;
+      color: rgba(255, 246, 231, 0.34);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .lock-message.is-error {
+      color: #ff9c81;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .key {
+      height: 47px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: rgba(255, 246, 231, 0.86);
+      font-family: "Bodoni 72", "Times New Roman", serif;
+      font-size: 20px;
+      background: rgba(255, 246, 231, 0.035);
+      border: 1px solid rgba(255, 229, 195, 0.11);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 140ms ease, background 140ms ease, border-color 140ms ease, transform 120ms ease;
+    }
+
+    .key:hover {
+      color: var(--gold);
+      background: rgba(255, 196, 107, 0.08);
+      border-color: rgba(255, 196, 107, 0.25);
+    }
+
+    .key:active {
+      transform: scale(0.95);
+    }
+
+    .key.is-helper {
+      color: rgba(255, 246, 231, 0.45);
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 11px;
+    }
+
+    .key svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .lock-panel.is-error {
+      animation: lock-shake 440ms ease;
+    }
+
+    @keyframes lock-shake {
+      0%, 100% { transform: translateX(0); }
+      18% { transform: translateX(-8px); }
+      36% { transform: translateX(7px); }
+      54% { transform: translateX(-5px); }
+      72% { transform: translateX(3px); }
+    }
+
+    .lock-flare {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      left: 50%;
+      width: 120px;
+      height: 120px;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle, rgba(255, 238, 198, 0.95), rgba(255, 124, 65, 0.35) 26%, transparent 68%);
+      transform: translate(-50%, -50%) scale(0.2);
+    }
+
+    .lock-screen.is-unlocking {
+      pointer-events: none;
+    }
+
+    .lock-screen.is-unlocking .lock-panel {
+      animation: unlock-panel 1s cubic-bezier(0.15, 0.76, 0.2, 1) forwards;
+    }
+
+    .lock-screen.is-unlocking .pin-dot.is-filled {
+      background: #fff6e7;
+      box-shadow: 0 0 20px rgba(255, 224, 172, 0.92);
+    }
+
+    .lock-screen.is-unlocking .lock-orbit {
+      animation: unlock-orbit 1.05s cubic-bezier(0.16, 0.8, 0.2, 1) forwards;
+    }
+
+    .lock-screen.is-unlocking .lock-flare {
+      animation: unlock-flare 1.05s cubic-bezier(0.12, 0.74, 0.2, 1) forwards;
+    }
+
+    @keyframes unlock-panel {
+      0% { opacity: 1; transform: scale(1); filter: blur(0); }
+      35% { opacity: 1; transform: scale(1.025); filter: brightness(1.35); }
+      100% { opacity: 0; transform: scale(1.08); filter: blur(12px); }
+    }
+
+    @keyframes unlock-orbit {
+      0% { opacity: 0.55; transform: rotateX(68deg) rotateZ(0deg) scale(1); }
+      100% { opacity: 0; transform: rotateX(38deg) rotateZ(120deg) scale(2.1); }
+    }
+
+    @keyframes unlock-flare {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+      35% { opacity: 1; transform: translate(-50%, -50%) scale(2.4); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(6); }
+    }
+
+    .lock-screen.is-unlocked {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 540px;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse at 50% 53%, rgba(139, 13, 24, 0.16) 0%, rgba(48, 6, 9, 0.06) 31%, transparent 63%),
+        #050203;
+    }
+
+    .scene::before {
+      content: "";
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.65), transparent 14%, transparent 86%, rgba(0, 0, 0, 0.65)),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.55), transparent 18%, transparent 80%, rgba(0, 0, 0, 0.28));
+    }
+
+    #sceneCanvas {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .gesture-fx {
+      position: absolute;
+      z-index: 6;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 260ms ease;
+    }
+
+    .gesture-fx.is-active {
+      opacity: 1;
+    }
+
+    #sceneCanvas.is-dragging {
+      cursor: grabbing;
+    }
+
+    .topline {
+      position: absolute;
+      z-index: 7;
+      top: var(--safe-top);
+      left: clamp(20px, 4vw, 56px);
+      right: clamp(20px, 4vw, 56px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .topline-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topline-mark {
+      width: 20px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.65;
+    }
+
+    .topline-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .status-light {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--ember);
+      box-shadow: 0 0 10px rgba(255, 90, 50, 0.8);
+    }
+
+    .title-block {
+      position: absolute;
+      z-index: 7;
+      top: clamp(64px, 9vh, 106px);
+      left: 50%;
+      width: min(520px, calc(100% - 42px));
+      text-align: center;
+      pointer-events: none;
+      transform: translateX(-50%);
+      animation: title-in 1.6s cubic-bezier(0.18, 0.78, 0.2, 1) 0.5s both;
+      transition: left 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes title-in {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+        filter: blur(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+        filter: blur(0);
+      }
+    }
+
+    .date-label {
+      margin: 0 0 11px;
+      color: rgba(255, 213, 147, 0.7);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      color: #fff7e9;
+      font-family: "Bodoni 72", "Didot", "Times New Roman", serif;
+      font-size: clamp(24px, 3.2vw, 42px);
+      font-weight: 400;
+      line-height: 1.05;
+      text-shadow: 0 0 24px rgba(255, 166, 82, 0.15);
+      white-space: nowrap;
+    }
+
+    .title-rule {
+      width: 46px;
+      height: 1px;
+      margin: 15px auto 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 196, 107, 0.7), transparent);
+    }
+
+    .bottom-bar {
+      position: absolute;
+      z-index: 8;
+      left: clamp(20px, 4vw, 56px);
+      right: clamp(20px, 4vw, 56px);
+      bottom: var(--safe-bottom);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      pointer-events: none;
+    }
+
+    .readout {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .readout-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 246, 231, 0.82);
+    }
+
+    .readout-main::before {
+      content: "";
+      width: 15px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.5;
+    }
+
+    .readout-meta {
+      color: rgba(255, 246, 231, 0.38);
+    }
+
+    .readout-meta strong {
+      color: rgba(255, 211, 139, 0.72);
+      font-weight: 500;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px;
+      pointer-events: auto;
+      background: rgba(8, 4, 5, 0.54);
+      border: 1px solid rgba(255, 227, 190, 0.12);
+      border-radius: 999px;
+      backdrop-filter: blur(14px);
+    }
+
+    .control-button {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .control-button:hover {
+      color: var(--gold);
+      background: rgba(255, 184, 101, 0.08);
+      border-color: rgba(255, 206, 137, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .control-button:active {
+      transform: translateY(0) scale(0.96);
+    }
+
+    .control-button[data-control="exchange"] {
+      color: #080405;
+      background: var(--cream);
+      border-color: var(--cream);
+    }
+
+    .control-button[data-control="exchange"]:hover {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .control-button svg {
+      width: 17px;
+      height: 17px;
+      pointer-events: none;
+    }
+
+    .control-button .play-icon {
+      display: none;
+    }
+
+    .control-button.is-paused .pause-icon {
+      display: none;
+    }
+
+    .control-button.is-paused .play-icon {
+      display: block;
+    }
+
+    .control-button[data-control="fullscreen"] .exit-fullscreen-icon {
+      display: none;
+    }
+
+    .control-button[data-control="fullscreen"].is-fullscreen .enter-fullscreen-icon {
+      display: none;
+    }
+
+    .control-button[data-control="fullscreen"].is-fullscreen .exit-fullscreen-icon {
+      display: block;
+    }
+
+    .scene:fullscreen,
+    .scene.pseudo-fullscreen {
+      width: 100vw;
+      height: 100dvh;
+      min-height: 100dvh;
+      background: #050203;
+    }
+
+    .scene.pseudo-fullscreen {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+    }
+
+    .control-button[data-control="camera"].is-active {
+      color: var(--gold);
+      background: rgba(255, 184, 101, 0.1);
+      border-color: rgba(255, 206, 137, 0.24);
+    }
+
+    .control-button[data-control="gallery"].is-active {
+      color: var(--gold);
+      background: rgba(255, 184, 101, 0.1);
+      border-color: rgba(255, 206, 137, 0.24);
+    }
+
+    .control-button[data-control="gallery"].is-locked::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 6px;
+      height: 6px;
+      background: var(--ember);
+      border: 1px solid rgba(5, 2, 3, 0.8);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255, 90, 50, 0.66);
+    }
+
+    .control-button[data-control="gallery"].is-denied {
+      animation: locked-shake 320ms ease;
+    }
+
+    @keyframes locked-shake {
+      25% { transform: translateX(-3px); }
+      50% { transform: translateX(3px); }
+      75% { transform: translateX(-1px); }
+    }
+
+    .control-button.is-loading svg {
+      animation: control-spin 1.1s linear infinite;
+    }
+
+    @keyframes control-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hand-stage {
+      position: absolute;
+      z-index: 3;
+      top: clamp(66px, 8vh, 92px);
+      right: clamp(18px, 4vw, 56px);
+      width: min(23vw, 286px);
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      background: #050203;
+      border: 1px solid rgba(255, 214, 151, 0.18);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      transform: translateY(-5px);
+      transition: opacity 360ms ease, transform 480ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .hand-stage.is-active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hand-stage::before {
+      content: "";
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(5, 2, 3, 0.28), transparent 31%),
+        linear-gradient(0deg, rgba(5, 2, 3, 0.36), transparent 22%);
+    }
+
+    .hand-stage::after {
+      content: "";
+      position: absolute;
+      z-index: 4;
+      left: 14%;
+      right: 6%;
+      top: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 189, 105, 0.4), transparent);
+      box-shadow: 0 0 16px rgba(255, 111, 54, 0.18);
+      animation: scan-line 5.5s ease-in-out infinite;
+    }
+
+    @keyframes scan-line {
+      0%, 100% {
+        opacity: 0.12;
+        transform: translateY(0);
+      }
+      48% {
+        opacity: 0.42;
+        transform: translateY(280px);
+      }
+      62% {
+        opacity: 0.18;
+        transform: translateY(280px);
+      }
+    }
+
+    .camera-feed,
+    .hand-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .camera-feed {
+      z-index: 1;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(1.06) contrast(0.94) saturate(1.1);
+      image-rendering: auto;
+      transform: scaleX(-1);
+    }
+
+    .camera-beauty {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      pointer-events: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background:
+        linear-gradient(135deg, rgba(255, 226, 197, 0.08), transparent 44%),
+        radial-gradient(circle at 58% 38%, rgba(255, 231, 210, 0.12), transparent 55%);
+      mix-blend-mode: soft-light;
+      opacity: 0.55;
+    }
+
+    .hand-overlay {
+      z-index: 3;
+    }
+
+    .camera-hud {
+      position: absolute;
+      z-index: 5;
+      right: 24px;
+      bottom: 25%;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255, 244, 225, 0.55);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .camera-quality {
+      position: absolute;
+      z-index: 5;
+      top: 11px;
+      left: 13px;
+      color: rgba(255, 246, 231, 0.43);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 7px;
+      line-height: 1;
+      max-width: calc(100% - 24px);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .gesture-light {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255, 246, 231, 0.3);
+      transition: background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .camera-hud.is-tracking .gesture-light {
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(255, 198, 107, 0.72);
+    }
+
+    .camera-hud.is-searching .gesture-light {
+      background: var(--ember);
+      box-shadow: 0 0 10px rgba(255, 90, 50, 0.6);
+    }
+
+    .gesture-launch {
+      position: absolute;
+      z-index: 9;
+      right: clamp(20px, 4vw, 56px);
+      bottom: calc(var(--safe-bottom) + 70px);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 13px 7px 8px;
+      color: var(--cream);
+      text-align: left;
+      background: rgba(15, 7, 8, 0.82);
+      border: 1px solid rgba(255, 208, 139, 0.24);
+      border-radius: 999px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(14px);
+      cursor: pointer;
+      transition: opacity 220ms ease, transform 220ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .gesture-launch:hover {
+      background: rgba(31, 13, 12, 0.94);
+      border-color: rgba(255, 208, 139, 0.48);
+      transform: translateY(-1px);
+    }
+
+    .gesture-launch.is-unavailable {
+      border-color: rgba(255, 90, 50, 0.4);
+    }
+
+    .scene.camera-on .gesture-launch {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(5px);
+    }
+
+    .gesture-launch-icon {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      color: #120807;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .gesture-launch-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .gesture-launch-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .gesture-launch-copy strong {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .gesture-launch-copy small {
+      color: rgba(255, 246, 231, 0.43);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 7px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .gesture-dialog-backdrop {
+      position: absolute;
+      z-index: 30;
+      inset: 0;
+      background: rgba(3, 1, 2, 0.68);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .gesture-dialog-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .gesture-dialog {
+      position: absolute;
+      z-index: 31;
+      top: 50%;
+      left: 50%;
+      width: min(390px, calc(100% - 32px));
+      padding: 22px;
+      color: var(--cream);
+      background: rgba(17, 8, 9, 0.97);
+      border: 1px solid rgba(255, 208, 139, 0.22);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, calc(-50% + 10px));
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .gesture-dialog.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%);
+    }
+
+    .gesture-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .gesture-dialog h2 {
+      margin: 0;
+      font-family: "Songti SC", "SimSun", serif;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .gesture-dialog p {
+      margin: 13px 0 17px;
+      color: rgba(255, 246, 231, 0.6);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .gesture-dialog a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 9px 14px;
+      color: #120807;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      background: var(--gold);
+      border-radius: 6px;
+    }
+
+    .gesture-dialog a:hover {
+      background: #ffd58a;
+    }
+
+    .memory-gallery {
+      position: absolute;
+      z-index: 14;
+      inset: 0;
+      padding: clamp(22px, 4vw, 58px);
+      background:
+        radial-gradient(ellipse at 44% 50%, rgba(111, 18, 22, 0.24), transparent 58%),
+        rgba(4, 2, 3, 0.93);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.012);
+      transition: opacity 280ms ease, transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .memory-gallery.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .gallery-flare {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 38%;
+      width: min(58vw, 740px);
+      aspect-ratio: 1;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle, rgba(255, 207, 132, 0.55), rgba(255, 87, 42, 0.16) 30%, transparent 68%);
+      transform: translate(-50%, -50%) scale(0.2);
+    }
+
+    .memory-gallery.is-opening .gallery-flare {
+      animation: gallery-flare 980ms cubic-bezier(0.12, 0.7, 0.22, 1) both;
+    }
+
+    @keyframes gallery-flare {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.18); }
+      22% { opacity: 0.86; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.45); }
+    }
+
+    .memory-gallery.is-opening .gallery-shell {
+      animation: gallery-shell-in 820ms cubic-bezier(0.16, 0.8, 0.2, 1) both;
+    }
+
+    @keyframes gallery-shell-in {
+      from {
+        opacity: 0;
+        transform: perspective(1200px) rotateX(7deg) scale(0.88);
+        filter: blur(12px);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(1200px) rotateX(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    .memory-gallery.is-opening .photo-card {
+      animation: photo-unfold 900ms cubic-bezier(0.12, 0.78, 0.2, 1) both;
+    }
+
+    @keyframes photo-unfold {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 20px, -180px) rotateY(-78deg) rotateZ(-5deg) scale(0.72);
+        filter: brightness(2.1) blur(8px);
+      }
+      62% {
+        opacity: 1;
+        filter: brightness(1.18) blur(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateY(0) rotateZ(0) scale(1);
+        filter: brightness(1) blur(0);
+      }
+    }
+
+    .memory-gallery.is-opening .gallery-side {
+      animation: gallery-side-in 620ms 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    @keyframes gallery-side-in {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .photo-shutter {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .memory-gallery.is-opening .photo-shutter {
+      opacity: 1;
+    }
+
+    .photo-shutter span {
+      height: 100%;
+      background:
+        linear-gradient(90deg, rgba(255, 190, 102, 0.16), transparent 18%, rgba(6, 2, 3, 0.98) 64%),
+        #090405;
+      border-left: 1px solid rgba(255, 199, 110, 0.18);
+      transform-origin: 50% 0;
+    }
+
+    .memory-gallery.is-opening .photo-shutter span {
+      animation: shutter-open 720ms cubic-bezier(0.72, 0.02, 0.22, 1) both;
+      animation-delay: calc(var(--shutter-index) * 42ms);
+    }
+
+    @keyframes shutter-open {
+      from { transform: scaleY(1); }
+      to { transform: scaleY(0); }
+    }
+
+
+    .gallery-shell {
+      width: min(1220px, 100%);
+      min-width: 0;
+      height: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 18px;
+    }
+
+    .gallery-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .gallery-header p {
+      margin: 0 0 6px;
+      color: rgba(255, 198, 107, 0.68);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .gallery-header h2 {
+      margin: 0;
+      font-family: "Songti SC", "SimSun", serif;
+      font-size: clamp(21px, 2.4vw, 30px);
+      font-weight: 500;
+      line-height: 1.15;
+    }
+
+    .gallery-close {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: rgba(255, 246, 231, 0.7);
+      background: rgba(255, 246, 231, 0.04);
+      border: 1px solid rgba(255, 229, 195, 0.16);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .gallery-close:hover {
+      color: var(--cream);
+      border-color: rgba(255, 229, 195, 0.38);
+    }
+
+    .gallery-close svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .gallery-grid {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(280px, 520px) minmax(250px, 330px);
+      align-items: center;
+      justify-content: center;
+      gap: clamp(28px, 5vw, 76px);
+    }
+
+    .photo-stage {
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1100px;
+    }
+
+    .photo-stack {
+      position: relative;
+      width: min(100%, 474px);
+      width: min(100%, 474px, calc((100dvh - 260px) * 0.8));
+      aspect-ratio: 4 / 5;
+      max-height: 100%;
+    }
+
+    .photo-stack::before,
+    .photo-stack::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #e8dfd0;
+      border: 1px solid rgba(255, 246, 231, 0.36);
+      border-radius: 3px;
+    }
+
+    .photo-stack::before {
+      transform: rotate(-3.6deg) translate(-9px, 4px);
+      opacity: 0.22;
+    }
+
+    .photo-stack::after {
+      transform: rotate(2.7deg) translate(8px, 3px);
+      opacity: 0.18;
+    }
+
+    .photo-card {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      overflow: hidden;
+      background: #160b0b;
+      border: 8px solid #f3eee2;
+      border-bottom-width: 48px;
+      border-radius: 3px;
+      box-shadow: 0 32px 74px rgba(0, 0, 0, 0.48);
+      transform-origin: 50% 60%;
+      will-change: transform, opacity;
+      touch-action: pan-y;
+    }
+
+    .photo-card::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 0;
+      pointer-events: none;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.12), transparent 28%),
+        linear-gradient(0deg, rgba(4, 2, 3, 0.3), transparent 42%);
+      mix-blend-mode: soft-light;
+    }
+
+    .gallery-photo {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 180ms ease-out, filter 220ms ease;
+      will-change: transform;
+    }
+
+    .photo-index {
+      position: absolute;
+      z-index: 2;
+      left: 17px;
+      bottom: -37px;
+      color: rgba(42, 32, 27, 0.55);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .photo-empty {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      color: rgba(255, 246, 231, 0.48);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 9px;
+      line-height: 1.7;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 192, 105, 0.12), transparent 34%),
+        #100708;
+    }
+
+    .photo-card.is-empty .gallery-photo {
+      opacity: 0;
+    }
+
+    .photo-card.is-empty .photo-empty {
+      display: grid;
+    }
+
+    .gallery-side {
+      min-width: 0;
+      min-height: 0;
+      align-self: stretch;
+      padding: 34px 0 178px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .gallery-caption span {
+      display: block;
+      color: rgba(255, 198, 107, 0.6);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .gallery-caption h3 {
+      margin: 8px 0 9px;
+      font-family: "Songti SC", "SimSun", serif;
+      font-size: clamp(22px, 2.5vw, 34px);
+      font-weight: 500;
+      line-height: 1.24;
+    }
+
+    .gallery-caption p {
+      max-width: 290px;
+      margin: 0;
+      color: rgba(255, 246, 231, 0.5);
+      font-size: 11px;
+      line-height: 1.75;
+    }
+
+    .gallery-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255, 246, 231, 0.38);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+    }
+
+    .gallery-progress-track {
+      flex: 1;
+      height: 1px;
+      overflow: hidden;
+      background: rgba(255, 246, 231, 0.14);
+    }
+
+    .gallery-progress-fill {
+      width: 16.66%;
+      height: 100%;
+      background: var(--gold);
+      transition: width 260ms ease;
+    }
+
+    .photo-thumbs {
+      min-width: 0;
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 3px 2px 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 208, 139, 0.3) transparent;
+    }
+
+    .photo-thumb,
+    .photo-thumb-add {
+      position: relative;
+      width: 44px;
+      height: 55px;
+      flex: 0 0 auto;
+      padding: 0;
+      overflow: hidden;
+      background-color: rgba(255, 246, 231, 0.06);
+      background-position: center;
+      background-size: cover;
+      border: 1px solid rgba(255, 231, 200, 0.14);
+      border-radius: 3px;
+      cursor: pointer;
+      opacity: 0.46;
+      transition: opacity 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .photo-thumb:hover,
+    .photo-thumb-add:hover {
+      opacity: 0.85;
+      transform: translateY(-2px);
+    }
+
+    .photo-thumb.is-active {
+      opacity: 1;
+      border-color: var(--gold);
+    }
+
+    .photo-thumb.is-active::after {
+      content: "";
+      position: absolute;
+      inset: auto 5px 4px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .photo-thumb.is-custom::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 5px;
+      height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255, 198, 107, 0.8);
+    }
+
+    .photo-thumb-add {
+      display: grid;
+      place-items: center;
+      color: rgba(255, 208, 139, 0.72);
+      background-image: none;
+      border-style: dashed;
+    }
+
+    .photo-thumb-add svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .gallery-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .gallery-action {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 7px 12px;
+      color: rgba(255, 246, 231, 0.74);
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(255, 246, 231, 0.04);
+      border: 1px solid rgba(255, 229, 195, 0.15);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .gallery-action:hover {
+      color: var(--cream);
+      border-color: rgba(255, 229, 195, 0.34);
+    }
+
+    .gallery-action.is-primary {
+      color: #130807;
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .gallery-action.is-primary:hover {
+      background: #ffd58a;
+    }
+
+    .gallery-action:disabled {
+      cursor: not-allowed;
+      opacity: 0.3;
+    }
+
+    .gallery-action svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .photo-storage {
+      margin: 0;
+      color: rgba(255, 246, 231, 0.3);
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .gallery-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .gallery-nav {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: rgba(255, 246, 231, 0.68);
+      background: rgba(255, 246, 231, 0.04);
+      border: 1px solid rgba(255, 229, 195, 0.14);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
+    }
+
+    .gallery-nav:hover {
+      color: var(--gold);
+      border-color: rgba(255, 208, 139, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .gallery-nav svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .gallery-status {
+      min-width: 154px;
+      color: rgba(255, 246, 231, 0.34);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .scene.gallery-open .hand-stage {
+      z-index: 17;
+      top: auto;
+      right: clamp(34px, 5vw, 72px);
+      bottom: 94px;
+      width: 156px;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      opacity: 0.94;
+      background: #050203;
+      border: 1px solid rgba(255, 214, 151, 0.2);
+      border-radius: var(--radius);
+      -webkit-mask-image: none;
+      mask-image: none;
+      transform: none;
+    }
+
+    .scene.gallery-open .gesture-fx {
+      z-index: 15;
+    }
+
+    .scene.gallery-open .hand-stage::after {
+      animation: none;
+      opacity: 0.16;
+    }
+
+    .scene.gallery-open .camera-hud {
+      right: 10px;
+      bottom: 9px;
+      font-size: 7px;
+    }
+
+    .scene.gallery-open .title-block {
+      opacity: 0;
+    }
+
+    .scene.gallery-open .gesture-launch {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scene.gallery-open .controls,
+    .scene.gallery-open .readout {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scene.camera-on .title-block {
+      left: 50%;
+    }
+
+    .gesture-map {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 18px;
+    }
+
+    .gesture-chip {
+      min-width: 0;
+      padding: 9px 10px;
+      background: rgba(255, 194, 108, 0.045);
+      border: 1px solid rgba(255, 208, 139, 0.1);
+      border-radius: 6px;
+    }
+
+    .gesture-chip span {
+      display: block;
+      color: rgba(255, 246, 231, 0.36);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .gesture-chip strong {
+      display: block;
+      margin-top: 3px;
+      color: rgba(255, 225, 181, 0.8);
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .exchange-flash {
+      position: absolute;
+      z-index: 6;
+      inset: 14% 20%;
+      opacity: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(255, 93, 40, 0.14), transparent 66%);
+      transition: opacity 700ms ease;
+    }
+
+    .scene.is-exchanging .exchange-flash {
+      opacity: 1;
+    }
+
+    .scene.is-exchanging .title-block h1 {
+      animation: title-glow 1.2s ease;
+    }
+
+    @keyframes title-glow {
+      45% {
+        color: #ffd999;
+        text-shadow: 0 0 34px rgba(255, 122, 54, 0.38);
+      }
+    }
+
+    .mechanism-panel {
+      position: absolute;
+      z-index: 12;
+      top: calc(var(--safe-top) + 44px);
+      right: clamp(20px, 4vw, 56px);
+      bottom: calc(var(--safe-bottom) + 58px);
+      width: min(370px, calc(100% - 40px));
+      padding: 22px;
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.46);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(18px);
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .mechanism-panel.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .panel-eyebrow {
+      margin: 0 0 7px;
+      color: rgba(255, 198, 107, 0.66);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      color: var(--cream);
+      font-family: "Songti SC", "SimSun", serif;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .panel-close {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid rgba(255, 235, 210, 0.14);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .panel-close:hover {
+      color: var(--cream);
+      border-color: rgba(255, 235, 210, 0.3);
+    }
+
+    .panel-close svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .panel-intro {
+      margin: 18px 0 20px;
+      color: rgba(255, 246, 231, 0.62);
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .mechanism-list {
+      display: grid;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid rgba(255, 229, 195, 0.12);
+    }
+
+    .mechanism-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 229, 195, 0.12);
+    }
+
+    .mechanism-index {
+      color: rgba(255, 177, 91, 0.55);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 9px;
+      line-height: 1.8;
+    }
+
+    .mechanism-list h3 {
+      margin: 0;
+      color: rgba(255, 246, 231, 0.92);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .mechanism-list p {
+      margin: 4px 0 0;
+      color: rgba(255, 246, 231, 0.48);
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .formula {
+      margin: 18px 0 0;
+      padding: 13px 14px;
+      overflow-x: auto;
+      color: rgba(255, 209, 142, 0.8);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      line-height: 1.75;
+      white-space: pre;
+      background: rgba(255, 194, 108, 0.055);
+      border: 1px solid rgba(255, 208, 139, 0.12);
+      border-radius: 6px;
+    }
+
+    .panel-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .panel-stat {
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 229, 195, 0.1);
+    }
+
+    .panel-stat span {
+      display: block;
+      color: rgba(255, 246, 231, 0.38);
+      font-size: 9px;
+    }
+
+    .panel-stat strong {
+      display: block;
+      margin-top: 3px;
+      color: rgba(255, 246, 231, 0.82);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .webgl-fallback {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      display: none;
+      width: min(320px, calc(100% - 40px));
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      text-align: center;
+      transform: translate(-50%, -50%);
+    }
+
+    .webgl-fallback.is-visible {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      .lock-screen {
+        padding: 14px;
+      }
+
+      .lock-orbit {
+        width: 92vw;
+      }
+
+      .lock-panel {
+        padding: 24px 20px 20px;
+      }
+
+      .lock-panel h1 {
+        font-size: 23px;
+      }
+
+      .key {
+        height: 44px;
+        font-size: 19px;
+      }
+
+      .scene {
+        min-height: 480px;
+      }
+
+      .topline {
+        font-size: 8px;
+      }
+
+      .topline-group {
+        gap: 8px;
+      }
+
+      .title-block {
+        top: 76px;
+      }
+
+      .scene.camera-on .title-block {
+        left: 50%;
+      }
+
+      .hand-stage {
+        top: 142px;
+        right: 8px;
+        width: 104px;
+        height: 78px;
+        aspect-ratio: auto;
+        border: 1px solid rgba(255, 214, 151, 0.12);
+        border-radius: var(--radius);
+        opacity: 0;
+        transform: translateY(-4px);
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
+
+      .gesture-launch {
+        right: 10px;
+        bottom: 78px;
+      }
+
+      .gesture-launch-copy small {
+        display: none;
+      }
+
+      .memory-gallery {
+        padding: 16px 16px 8px;
+        overflow-y: auto;
+      }
+
+      .gallery-shell {
+        height: auto;
+        min-height: 100%;
+        gap: 14px;
+      }
+
+      .gallery-header h2 {
+        font-size: 22px;
+      }
+
+      .gallery-close {
+        width: 34px;
+        height: 34px;
+      }
+
+      .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 23px;
+      }
+
+      .photo-stage {
+        height: auto;
+      }
+
+      .photo-stack {
+        width: min(80vw, 350px);
+      }
+
+      .photo-card {
+        border-width: 6px;
+        border-bottom-width: 38px;
+      }
+
+      .photo-index {
+        left: 12px;
+        bottom: -29px;
+      }
+
+      .gallery-side {
+        width: min(100%, 410px);
+        padding: 0;
+        align-items: center;
+        gap: 16px;
+        text-align: center;
+      }
+
+      .gallery-caption p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .gallery-progress,
+      .photo-thumbs {
+        width: 100%;
+      }
+
+      .gallery-actions {
+        justify-content: center;
+      }
+
+      .gallery-bottom {
+        padding-bottom: 0;
+      }
+
+      .scene.gallery-open .hand-stage {
+        top: 66px;
+        right: 16px;
+        bottom: auto;
+        width: 92px;
+        height: 69px;
+        aspect-ratio: auto;
+      }
+
+      .scene.gallery-open .camera-hud {
+        right: 6px;
+        bottom: 5px;
+        font-size: 6px;
+      }
+
+      .hand-stage.is-active {
+        opacity: 0.72;
+        transform: translateY(0);
+      }
+
+      .hand-stage::before {
+        background: linear-gradient(0deg, rgba(5, 2, 3, 0.62), transparent 45%);
+      }
+
+      .camera-feed {
+        object-fit: contain;
+        background: #050203;
+      }
+
+      .hand-stage::after {
+        left: 0;
+        right: 0;
+      }
+
+      .camera-hud {
+        right: 8px;
+        bottom: 8px;
+        font-size: 7px;
+      }
+
+      .title-block h1 {
+        font-size: clamp(21px, 7vw, 29px);
+      }
+
+      .bottom-bar {
+        align-items: center;
+      }
+
+      .readout {
+        max-width: 145px;
+        font-size: 8px;
+      }
+
+      .readout-meta {
+        white-space: nowrap;
+      }
+
+      .controls {
+        gap: 3px;
+        padding: 5px;
+      }
+
+      .control-button {
+        width: 35px;
+        height: 35px;
+      }
+
+      .mechanism-panel {
+        top: auto;
+        left: 10px;
+        right: 10px;
+        bottom: 70px;
+        width: auto;
+        max-height: min(68vh, 560px);
+        padding: 18px;
+        transform: translateY(18px);
+      }
+
+      .gesture-map {
+        grid-template-columns: 1fr;
+      }
+
+      .mechanism-panel.is-open {
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .topline-status span:last-child {
+        display: none;
+      }
+
+      .readout-meta {
+        display: none;
+      }
+
+      .title-block h1 {
+        font-size: 21px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .title-block,
+      .scene.is-exchanging .title-block h1 {
+        animation: none;
+      }
+
+      .memory-gallery.is-opening .gallery-shell,
+      .memory-gallery.is-opening .photo-card,
+      .memory-gallery.is-opening .gallery-side,
+      .memory-gallery.is-opening .gallery-flare {
+        animation: none;
+      }
+
+      .memory-gallery.is-opening .photo-shutter {
+        display: none;
+      }
+
+      .control-button,
+      .mechanism-panel,
+      .lock-screen {
+        transition-duration: 0.01ms;
+      }
+
+      .lock-panel,
+      .lock-orbit,
+      .lock-emblem::after {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="lock-screen" id="lockScreen" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+    <div class="lock-orbit" aria-hidden="true"></div>
+    <div class="lock-flare" aria-hidden="true"></div>
+    <section class="lock-panel" id="lockPanel">
+      <div class="lock-emblem" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path>
+        </svg>
+      </div>
+      <p class="lock-eyebrow">Private particle gallery</p>
+      <h1 id="lockTitle">私密粒子空间</h1>
+      <p class="lock-subtitle">请输入六位访问密码</p>
+      <div class="pin-dots" id="pinDots" aria-label="已输入 0 位，共 6 位">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+      <p class="lock-message" id="lockMessage" aria-live="polite">LOCAL ACCESS ONLY</p>
+      <div class="keypad" aria-label="数字密码键盘">
+        <button class="key" type="button" data-digit="1" aria-label="数字 1">1</button>
+        <button class="key" type="button" data-digit="2" aria-label="数字 2">2</button>
+        <button class="key" type="button" data-digit="3" aria-label="数字 3">3</button>
+        <button class="key" type="button" data-digit="4" aria-label="数字 4">4</button>
+        <button class="key" type="button" data-digit="5" aria-label="数字 5">5</button>
+        <button class="key" type="button" data-digit="6" aria-label="数字 6">6</button>
+        <button class="key" type="button" data-digit="7" aria-label="数字 7">7</button>
+        <button class="key" type="button" data-digit="8" aria-label="数字 8">8</button>
+        <button class="key" type="button" data-digit="9" aria-label="数字 9">9</button>
+        <button class="key is-helper" id="lockClear" type="button" aria-label="清除密码">清除</button>
+        <button class="key" type="button" data-digit="0" aria-label="数字 0">0</button>
+        <button class="key is-helper" id="lockBackspace" type="button" aria-label="删除一位密码" title="删除一位">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m21 7-5-4H8L2 12l6 9h8l5-4V7Z"></path>
+            <path d="m11 9 6 6M17 9l-6 6"></path>
+          </svg>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <main class="scene" id="scene" aria-hidden="true" inert>
+    <canvas id="sceneCanvas" aria-label="由红色和金色粒子构成的 3D 爱心动画">
+      你的浏览器需要支持 WebGL 才能观看粒子爱心。
+    </canvas>
+    <canvas class="gesture-fx" id="gestureFx" aria-hidden="true"></canvas>
+
+    <div class="exchange-flash" aria-hidden="true"></div>
+
+    <div class="hand-stage" id="handStage" aria-hidden="true">
+      <video class="camera-feed" id="cameraFeed" muted playsinline></video>
+      <div class="camera-beauty" aria-hidden="true"></div>
+      <canvas class="hand-overlay" id="handOverlay"></canvas>
+      <span class="camera-quality" id="cameraQuality">CAMERA</span>
+      <div class="camera-hud" id="cameraHud">
+        <span class="gesture-light"></span>
+        <span id="gestureState">STANDBY</span>
+      </div>
+    </div>
+
+    <div class="topline" aria-hidden="true">
+      <div class="topline-group">
+        <span class="topline-mark"></span>
+        <span>NO. 14</span>
+      </div>
+      <div class="topline-status">
+        <span class="status-light"></span>
+        <span>PARTICLE SYSTEM</span>
+        <span>LIVE</span>
+      </div>
+    </div>
+
+    <header class="title-block">
+      <p class="date-label">December 25</p>
+      <h1>MERRY CHRISTMAS</h1>
+      <div class="title-rule" aria-hidden="true"></div>
+    </header>
+
+    <div class="bottom-bar">
+      <div class="readout" aria-live="polite">
+        <span class="readout-main" id="readoutMain">Particle morphology</span>
+        <span class="readout-meta">
+          <strong id="particleCount">16,000</strong> points /
+          morph <strong id="exchangeCount">00</strong> /
+          <strong id="cameraStatus">camera off</strong>
+        </span>
+      </div>
+
+      <div class="controls" aria-label="动画控制">
+        <button class="control-button" type="button" data-control="pause" aria-label="暂停动画" title="暂停动画">
+          <svg class="pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+            <path d="M9 5v14M15 5v14"></path>
+          </svg>
+          <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+            <path d="m8 5 11 7-11 7V5Z"></path>
+          </svg>
+        </button>
+        <button class="control-button" type="button" data-control="camera" aria-label="启用手势控制" title="启用手势控制" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="6" width="13" height="12" rx="2"></rect>
+            <path d="m16 10 5-3v10l-5-3"></path>
+          </svg>
+        </button>
+        <button class="control-button is-locked" type="button" data-control="gallery" aria-label="单指捏合打开回忆相册" title="单指捏合打开回忆相册" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+            <circle cx="8.5" cy="9" r="1.5"></circle>
+            <path d="m21 15-4.5-4.5L9 18"></path>
+          </svg>
+        </button>
+        <button class="control-button" type="button" data-control="fullscreen" aria-label="进入全屏" title="进入全屏" aria-pressed="false">
+          <svg class="enter-fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
+          </svg>
+          <svg class="exit-fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"></path>
+          </svg>
+        </button>
+        <button class="control-button" type="button" data-control="info" aria-label="查看粒子交换原理" title="查看粒子交换原理" aria-expanded="false" aria-controls="mechanismPanel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 11v6M12 7h.01"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <section class="memory-gallery" id="memoryGallery" role="dialog" aria-modal="true" aria-labelledby="galleryTitle" aria-hidden="true" inert>
+      <div class="gallery-flare" aria-hidden="true"></div>
+      <div class="gallery-shell">
+        <header class="gallery-header">
+          <div>
+            <p>MEMORY ARCHIVE / LOCAL</p>
+            <h2 id="galleryTitle">回忆相册</h2>
+          </div>
+          <button class="gallery-close" id="galleryClose" type="button" aria-label="关闭回忆相册" title="关闭相册">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+          </button>
+        </header>
+
+        <div class="gallery-grid">
+          <div class="photo-stage">
+            <div class="photo-stack">
+              <article class="photo-card" id="photoCard" aria-label="当前照片">
+                <img class="gallery-photo" id="galleryPhoto" src="./images/01-first-snow.jpg" alt="冬日初雪">
+                <div class="photo-shutter" aria-hidden="true">
+                  <span style="--shutter-index:0"></span>
+                  <span style="--shutter-index:1"></span>
+                  <span style="--shutter-index:2"></span>
+                  <span style="--shutter-index:3"></span>
+                  <span style="--shutter-index:4"></span>
+                  <span style="--shutter-index:5"></span>
+                </div>
+                <div class="photo-empty" id="photoEmpty">NO MEMORIES<br>ADD YOUR FIRST PHOTO</div>
+                <span class="photo-index" id="photoIndex">FRAME 01</span>
+              </article>
+            </div>
+          </div>
+
+          <aside class="gallery-side">
+            <div class="gallery-caption">
+              <span id="photoDate">DEC 24 · 2026</span>
+              <h3 id="photoTitle">初雪</h3>
+              <p id="photoNote">雪落在安静的水面上，像时间特意放慢的一刻。</p>
+            </div>
+
+            <div class="gallery-progress">
+              <span id="photoProgress">01 / 06</span>
+              <span class="gallery-progress-track" aria-hidden="true">
+                <span class="gallery-progress-fill" id="photoProgressFill"></span>
+              </span>
+            </div>
+
+            <div class="photo-thumbs" id="photoThumbs" aria-label="照片列表"></div>
+
+            <div class="gallery-actions">
+              <label class="gallery-action is-primary" for="photoInput">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                添加照片
+              </label>
+              <input id="photoInput" type="file" accept="image/*" multiple hidden>
+              <button class="gallery-action" id="photoDelete" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path>
+                </svg>
+                移除
+              </button>
+              <button class="gallery-action" id="photoRestore" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
+                恢复默认
+              </button>
+            </div>
+            <p class="photo-storage" id="photoStorage">照片保存在当前浏览器本地</p>
+          </aside>
+        </div>
+
+        <div class="gallery-bottom">
+          <button class="gallery-nav" id="photoPrev" type="button" aria-label="上一张照片" title="上一张">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+          <span class="gallery-status" id="galleryStatus">LOCAL MEMORY / 06 FRAMES</span>
+          <button class="gallery-nav" id="photoNext" type="button" aria-label="下一张照片" title="下一张">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <button class="gesture-launch" id="gestureLaunch" type="button" aria-label="启用手势控制">
+      <span class="gesture-launch-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="6" width="13" height="12" rx="2"></rect>
+          <path d="m16 10 5-3v10l-5-3"></path>
+        </svg>
+      </span>
+      <span class="gesture-launch-copy">
+        <strong id="gestureLaunchLabel">手势交互</strong>
+        <small id="gestureLaunchHint">ENABLE CAMERA</small>
+      </span>
+    </button>
+
+    <div class="gesture-dialog-backdrop" id="gestureDialogBackdrop"></div>
+    <section class="gesture-dialog" id="gestureDialog" role="dialog" aria-modal="true" aria-labelledby="gestureDialogTitle" aria-hidden="true">
+      <div class="gesture-dialog-head">
+        <h2 id="gestureDialogTitle">手势模块没有启动</h2>
+        <button class="panel-close" id="gestureDialogClose" type="button" aria-label="关闭提示" title="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18"></path>
+          </svg>
+        </button>
+      </div>
+      <p id="gestureDialogMessage">正在检查页面打开方式与摄像头模块。</p>
+      <a id="gestureOpenCorrectLink" href="http://127.0.0.1:4173/">打开正确地址</a>
+    </section>
+
+    <aside class="mechanism-panel" id="mechanismPanel" aria-labelledby="mechanismTitle" aria-hidden="true">
+      <div class="panel-head">
+        <div>
+          <p class="panel-eyebrow">Mechanism</p>
+          <h2 id="mechanismTitle">粒子形态，如何响应</h2>
+        </div>
+        <button class="panel-close" type="button" aria-label="关闭原理面板" title="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <p class="panel-intro">
+        单手掌心开合直接控制粒子云扩散与重组；捏合负责相册打开、关闭和双指缩放。
+      </p>
+
+      <ol class="mechanism-list">
+        <li>
+          <span class="mechanism-index">01</span>
+          <div>
+            <h3>先采样归位点</h3>
+            <p>使用心形参数方程生成三维点云，给每颗粒子分配一个固定的 home 坐标。</p>
+          </div>
+        </li>
+        <li>
+          <span class="mechanism-index">02</span>
+          <div>
+            <h3>单手掌心张合控制扩散</h3>
+            <p>握合手掌时粒子收拢成爱心，完全张开手掌时粒子实时散成星尘云。</p>
+          </div>
+        </li>
+        <li>
+          <span class="mechanism-index">03</span>
+          <div>
+            <h3>及时连续插值</h3>
+            <p>每帧读取手指伸展程度，粒子在约 80ms 的响应时间内跟随掌心开合。</p>
+          </div>
+        </li>
+        <li>
+          <span class="mechanism-index">04</span>
+          <div>
+            <h3>3D 旋转叠加视差</h3>
+            <p>点云整体绕 Y 轴旋转，纵深不同的粒子产生速度差，侧面就会变窄再展开。</p>
+          </div>
+        </li>
+      </ol>
+
+      <pre class="formula" aria-label="粒子分散重组公式">target = 0.7 * fingerSpread + 0.3 * extendedRatio
+spread += (target - spread) * (1 - exp(-dt / 82))
+position = mix(heart, cloud, spread) + swirl</pre>
+
+      <div class="gesture-map" aria-label="手势映射">
+        <div class="gesture-chip">
+          <span>POINT / MOVE</span>
+          <strong>手掌前后左右推移，带动粒子群全方位旋转移动</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>PALM OPEN / CLOSE</span>
+          <strong>张开手掌扩散，握合手掌重新聚成爱心</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>SINGLE PINCH</span>
+          <strong>单指捏合一次，打开或收起相册</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>OPEN PALM SWIPE</span>
+          <strong>相册打开后，横向挥手切换照片</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>TWO-FINGER PINCH</span>
+          <strong>相册内双指捏合缩放照片</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>INDEX TRAIL</span>
+          <strong>食指引路，在画面中留下金色光迹</strong>
+        </div>
+        <div class="gesture-chip">
+          <span>ONE HAND / LIVE</span>
+          <strong>单手完成全部操作，粒子实时跟随</strong>
+        </div>
+      </div>
+
+      <div class="panel-stats">
+        <div class="panel-stat">
+          <span>粒子数量</span>
+          <strong id="panelParticleCount">16,000</strong>
+        </div>
+        <div class="panel-stat">
+          <span>动作反馈延迟</span>
+          <strong>&lt; 100 ms</strong>
+        </div>
+        <div class="panel-stat">
+          <span>粒子状态</span>
+          <strong>Heart / Cloud</strong>
+        </div>
+        <div class="panel-stat">
+          <span>投影方式</span>
+          <strong>Perspective</strong>
+        </div>
+      </div>
+    </aside>
+
+    <p class="webgl-fallback" id="webglFallback">
+      当前浏览器无法创建 WebGL 场景，请使用最新版 Chrome、Edge 或 Safari 打开。
+    </p>
+  </main>
+
+  <script src="./lock.js"></script>
+  <script src="./three.min.js"></script>
+  <script type="module" src="./gesture.js"></script>
+  <script>
+    (() => {
+      const canvas = document.getElementById("sceneCanvas");
+      const sceneElement = document.getElementById("scene");
+      const fallback = document.getElementById("webglFallback");
+      const pauseButton = document.querySelector('[data-control="pause"]');
+      const cameraButton = document.querySelector('[data-control="camera"]');
+      const fullscreenButton = document.querySelector('[data-control="fullscreen"]');
+      const gestureLaunchButton = document.getElementById("gestureLaunch");
+      const gestureLaunchLabel = document.getElementById("gestureLaunchLabel");
+      const gestureLaunchHint = document.getElementById("gestureLaunchHint");
+      const gestureDialog = document.getElementById("gestureDialog");
+      const gestureDialogBackdrop = document.getElementById("gestureDialogBackdrop");
+      const gestureDialogClose = document.getElementById("gestureDialogClose");
+      const gestureDialogTitle = document.getElementById("gestureDialogTitle");
+      const gestureDialogMessage = document.getElementById("gestureDialogMessage");
+      const gestureOpenCorrectLink = document.getElementById("gestureOpenCorrectLink");
+      const infoButton = document.querySelector('[data-control="info"]');
+      const mechanismPanel = document.getElementById("mechanismPanel");
+      const closePanelButton = document.querySelector(".panel-close");
+      const exchangeCountElement = document.getElementById("exchangeCount");
+      const particleCountElement = document.getElementById("particleCount");
+      const panelParticleCount = document.getElementById("panelParticleCount");
+      const readoutMain = document.getElementById("readoutMain");
+      const cameraStatus = document.getElementById("cameraStatus");
+      const gestureStateElement = document.getElementById("gestureState");
+      const cameraHud = document.getElementById("cameraHud");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isCompact = window.matchMedia("(max-width: 640px)").matches;
+      const PARTICLE_COUNT = reducedMotion ? 7000 : isCompact ? 10000 : 16000;
+      const TAU = Math.PI * 2;
+
+      particleCountElement.textContent = PARTICLE_COUNT.toLocaleString("en-US");
+      panelParticleCount.textContent = PARTICLE_COUNT.toLocaleString("en-US");
+
+      if (!window.THREE) {
+        fallback.classList.add("is-visible");
+        return;
+      }
+
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: false,
+          alpha: true,
+          powerPreference: "high-performance"
+        });
+      } catch (error) {
+        fallback.classList.add("is-visible");
+        return;
+      }
+
+      renderer.setClearColor(0x000000, 0);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.24;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(39, 1, 0.1, 100);
+      camera.position.set(0, 0.2, 22);
+      camera.lookAt(0, -0.25, 0);
+
+      const heartGroup = new THREE.Group();
+      heartGroup.position.y = -0.8;
+      scene.add(heartGroup);
+
+      function mulberry32(seed) {
+        return function random() {
+          let value = seed += 0x6D2B79F5;
+          value = Math.imul(value ^ value >>> 15, value | 1);
+          value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+          return ((value ^ value >>> 14) >>> 0) / 4294967296;
+        };
+      }
+
+      const random = mulberry32(20261225);
+      const positions = new Float32Array(PARTICLE_COUNT * 3);
+      const homePositions = new Float32Array(PARTICLE_COUNT * 3);
+      const introPositions = new Float32Array(PARTICLE_COUNT * 3);
+      const colors = new Float32Array(PARTICLE_COUNT * 3);
+      const sizes = new Float32Array(PARTICLE_COUNT);
+      const phases = new Float32Array(PARTICLE_COUNT);
+      const introDelays = new Float32Array(PARTICLE_COUNT);
+
+      const color = new THREE.Color();
+      const heartScale = 0.278;
+      const centerY = 1.62;
+
+      function createHeartPoint(index) {
+        const t = random() * TAU;
+        const shellBias = random() < 0.62;
+        const radius = shellBias
+          ? 0.84 + random() * 0.16
+          : Math.sqrt(random()) * 0.88;
+
+        const sinT = Math.sin(t);
+        const cosT = Math.cos(t);
+        const heartX = 16 * sinT * sinT * sinT;
+        const heartY = 13 * cosT
+          - 5 * Math.cos(2 * t)
+          - 2 * Math.cos(3 * t)
+          - Math.cos(4 * t);
+
+        const edgeFalloff = Math.sqrt(Math.max(0, 1 - radius * radius));
+        const depth = (random() * 2 - 1) * (0.28 + edgeFalloff * 1.02);
+        const jitter = 0.018 + (1 - radius) * 0.018;
+        const x = heartX * radius * heartScale + (random() - 0.5) * jitter;
+        const y = heartY * radius * heartScale + centerY + (random() - 0.5) * jitter;
+        const z = depth + (random() - 0.5) * 0.045;
+        const offset = index * 3;
+
+        homePositions[offset] = x;
+        homePositions[offset + 1] = y;
+        homePositions[offset + 2] = z;
+        introPositions[offset] = (random() * 2 - 1) * 16;
+        introPositions[offset + 1] = (random() * 2 - 1) * 10 + 0.8;
+        introPositions[offset + 2] = (random() * 2 - 1) * 10;
+        positions[offset] = introPositions[offset];
+        positions[offset + 1] = introPositions[offset + 1];
+        positions[offset + 2] = introPositions[offset + 2];
+        introDelays[index] = random() * 0.9;
+
+        const depthLight = Math.max(0, Math.min(1, 0.55 - z * 0.12 + random() * 0.2));
+        const colorRoll = random();
+        if (colorRoll < 0.56) {
+          color.setHSL(0.985 + random() * 0.012, 0.92, 0.42 + depthLight * 0.18, THREE.SRGBColorSpace);
+        } else if (colorRoll < 0.84) {
+          color.setHSL(0.025 + random() * 0.025, 0.95, 0.52 + depthLight * 0.16, THREE.SRGBColorSpace);
+        } else if (colorRoll < 0.955) {
+          color.setHSL(0.095 + random() * 0.035, 0.9, 0.61 + depthLight * 0.16, THREE.SRGBColorSpace);
+        } else {
+          color.setHSL(0.09, 0.25, 0.82 + random() * 0.1, THREE.SRGBColorSpace);
+        }
+
+        colors[offset] = color.r;
+        colors[offset + 1] = color.g;
+        colors[offset + 2] = color.b;
+        sizes[index] = 0.48 + Math.pow(random(), 1.6) * 0.96;
+        phases[index] = random();
+      }
+
+      for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+        createHeartPoint(i);
+      }
+
+      const heartGeometry = new THREE.BufferGeometry();
+      const positionAttribute = new THREE.BufferAttribute(positions, 3);
+      positionAttribute.setUsage(THREE.DynamicDrawUsage);
+      heartGeometry.setAttribute("position", positionAttribute);
+      heartGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      heartGeometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+      heartGeometry.setAttribute("aPhase", new THREE.BufferAttribute(phases, 1));
+
+      const vertexShader = `
+        attribute float aSize;
+        attribute float aPhase;
+        varying vec3 vColor;
+        varying float vSpark;
+        uniform float uTime;
+        uniform float uBurst;
+        uniform float uScale;
+        uniform float uPixelRatio;
+
+        void main() {
+          vec3 p = position;
+          float drift = sin(uTime * 0.0015 + aPhase * 31.4159);
+          p += normalize(vec3(
+            sin(aPhase * 17.0 + uTime * 0.0007),
+            cos(aPhase * 23.0 + uTime * 0.0005),
+            sin(aPhase * 29.0 + uTime * 0.0009)
+          )) * (0.012 + aPhase * 0.012) * drift;
+          vec3 burstDirection = normalize(p + vec3(
+            sin(aPhase * 41.0 + 0.7),
+            cos(aPhase * 37.0 + 1.3),
+            sin(aPhase * 31.0 + 2.1)
+          ) * 1.7);
+          p += burstDirection * uBurst * (0.34 + aPhase * 1.08);
+
+          vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+          float depth = clamp(-mvPosition.z, 5.0, 60.0);
+          gl_PointSize = clamp(aSize * uScale * uPixelRatio * (18.0 / depth), 1.0, 15.0);
+          gl_Position = projectionMatrix * mvPosition;
+
+          vColor = color;
+          vSpark = 0.72 + 0.28 * sin(uTime * 0.0018 + aPhase * 6.28318);
+        }
+      `;
+
+      const fragmentShader = `
+        varying vec3 vColor;
+        varying float vSpark;
+        uniform float uOpacity;
+
+        void main() {
+          vec2 point = gl_PointCoord - vec2(0.5);
+          float distanceToCenter = length(point) * 2.0;
+          if (distanceToCenter > 1.0) discard;
+          float core = 1.0 - smoothstep(0.0, 0.36, distanceToCenter);
+          float halo = pow(max(0.0, 1.0 - distanceToCenter), 2.2);
+          float alpha = (core * 0.74 + halo * 0.26) * vSpark * uOpacity;
+          vec3 glow = vColor * (1.08 + halo * 0.72);
+          gl_FragColor = vec4(glow, alpha);
+        }
+      `;
+
+      function createPointMaterial(options) {
+        return new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0 },
+            uBurst: { value: 0 },
+            uScale: { value: options.scale },
+            uPixelRatio: { value: renderer.getPixelRatio() },
+            uOpacity: { value: options.opacity }
+          },
+          vertexShader,
+          fragmentShader,
+          vertexColors: true,
+          transparent: true,
+          depthTest: false,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+      }
+
+      const haloMaterial = createPointMaterial({ scale: 12.5, opacity: 0.13 });
+      const coreMaterial = createPointMaterial({ scale: 5.15, opacity: 0.92 });
+      const haloPoints = new THREE.Points(heartGeometry, haloMaterial);
+      const corePoints = new THREE.Points(heartGeometry, coreMaterial);
+      haloPoints.renderOrder = 1;
+      corePoints.renderOrder = 2;
+      heartGroup.add(haloPoints, corePoints);
+
+      const backdropCount = reducedMotion ? 260 : isCompact ? 520 : 900;
+      const backdropPositions = new Float32Array(backdropCount * 3);
+      const backdropColors = new Float32Array(backdropCount * 3);
+      const backdropSizes = new Float32Array(backdropCount);
+      const backdropPhases = new Float32Array(backdropCount);
+
+      for (let i = 0; i < backdropCount; i += 1) {
+        const offset = i * 3;
+        backdropPositions[offset] = (random() * 2 - 1) * 27;
+        backdropPositions[offset + 1] = (random() * 2 - 1) * 16;
+        backdropPositions[offset + 2] = -8 - random() * 22;
+        const colorRoll = random();
+        if (colorRoll < 0.12) {
+          color.setHSL(0.1, 0.7, 0.68, THREE.SRGBColorSpace);
+        } else if (colorRoll < 0.32) {
+          color.setHSL(0.98, 0.68, 0.4, THREE.SRGBColorSpace);
+        } else {
+          color.setRGB(0.52, 0.44, 0.38, THREE.SRGBColorSpace);
+        }
+        backdropColors[offset] = color.r;
+        backdropColors[offset + 1] = color.g;
+        backdropColors[offset + 2] = color.b;
+        backdropSizes[i] = 0.2 + random() * 0.72;
+        backdropPhases[i] = random();
+      }
+
+      const backdropGeometry = new THREE.BufferGeometry();
+      backdropGeometry.setAttribute("position", new THREE.BufferAttribute(backdropPositions, 3));
+      backdropGeometry.setAttribute("color", new THREE.BufferAttribute(backdropColors, 3));
+      backdropGeometry.setAttribute("aSize", new THREE.BufferAttribute(backdropSizes, 1));
+      backdropGeometry.setAttribute("aPhase", new THREE.BufferAttribute(backdropPhases, 1));
+      const backdropMaterial = createPointMaterial({ scale: 3.2, opacity: 0.46 });
+      const backdrop = new THREE.Points(backdropGeometry, backdropMaterial);
+      scene.add(backdrop);
+
+      const cloudPositions = new Float32Array(PARTICLE_COUNT * 3);
+
+      for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+        const offset = i * 3;
+        const theta = random() * TAU;
+        const vertical = random() * 2 - 1;
+        const ring = Math.sqrt(Math.max(0, 1 - vertical * vertical));
+        const radius = 4.2 + Math.pow(random(), 0.7) * 7.8;
+        cloudPositions[offset] = Math.cos(theta) * ring * radius * 1.15;
+        cloudPositions[offset + 1] = vertical * radius * 0.85 + 0.2;
+        cloudPositions[offset + 2] = Math.sin(theta) * ring * radius * 0.72;
+      }
+
+      let particleSpread = 0;
+      let particleSpreadTarget = 0;
+      let particleSpreadMode = "heart";
+      let exchangeCount = 0;
+      let introStart = performance.now();
+      let introComplete = false;
+      let paused = false;
+      let pageVisible = !document.hidden;
+      let lastFrame = performance.now();
+      let idleTime = 0;
+      let rotationAngle = 0;
+      let pointerDown = false;
+      let pointerStartX = 0;
+      let pointerStartY = 0;
+      let pointerLastX = 0;
+      let pointerLastY = 0;
+      let pointerMoved = false;
+      let manualSpin = 0;
+      let manualVelocity = 0;
+      let manualTilt = 0;
+      let manualTiltTarget = 0;
+      let burstStrength = 0;
+      let cameraActive = false;
+      let gestureActive = false;
+      let gestureTargetX = 0;
+      let gestureTargetY = 0;
+      let gestureTargetTilt = 0;
+      let gestureTargetScale = 1;
+      let gestureTargetMoveX = 0;
+      let gestureTargetMoveY = 0;
+      let gestureTargetMoveZ = 0;
+      let gestureTargetRoll = 0;
+      let gestureX = 0;
+      let gestureTilt = 0;
+      let gestureScale = 1;
+      let gestureMoveX = 0;
+      let gestureMoveY = 0;
+      let gestureMoveZ = 0;
+      let gestureRoll = 0;
+      let toastTimer = null;
+      let pausedBeforePanel = false;
+      let gestureModuleReady = Boolean(window.__gestureModuleReady);
+      let pendingGestureRequest = false;
+      let pendingGestureTimer = 0;
+      let performanceSampleTime = 0;
+      let performanceSampleCount = 0;
+      let adaptiveQualityApplied = false;
+
+      function easeInOutCubic(value) {
+        return value < 0.5
+          ? 4 * value * value * value
+          : 1 - Math.pow(-2 * value + 2, 3) / 2;
+      }
+
+      function easeOutQuint(value) {
+        return 1 - Math.pow(1 - value, 5);
+      }
+
+      function clamp(value, minimum, maximum) {
+        return Math.max(minimum, Math.min(maximum, value));
+      }
+
+      function damp(current, target, tau, delta) {
+        return current + (target - current) * (1 - Math.exp(-delta / tau));
+      }
+
+      function setParticleSpread(target, immediate = false) {
+        if (!introComplete) return false;
+        const nextTarget = clamp(Number(target) || 0, 0, 1);
+        const nextMode = particleSpreadMode === "cloud"
+          ? nextTarget < 0.42 ? "heart" : "cloud"
+          : nextTarget > 0.58 ? "cloud" : "heart";
+        particleSpreadTarget = nextTarget;
+
+        if (nextMode !== particleSpreadMode) {
+          particleSpreadMode = nextMode;
+          exchangeCount += 1;
+          burstStrength = Math.max(burstStrength, 0.5);
+          exchangeCountElement.textContent = String(exchangeCount).padStart(2, "0");
+          readoutMain.textContent = nextTarget >= 0.5 ? "Particle dispersal" : "Heart reassembly";
+          window.clearTimeout(toastTimer);
+          toastTimer = window.setTimeout(() => {
+            readoutMain.textContent = cameraActive ? "Gesture interaction" : "Particle morphology";
+          }, 1600);
+          sceneElement.classList.add("is-exchanging");
+          window.setTimeout(() => sceneElement.classList.remove("is-exchanging"), 720);
+        }
+
+        if (immediate) particleSpread = nextTarget;
+        return true;
+      }
+
+      function setHandOpenness(openness) {
+        return setParticleSpread(openness, false);
+      }
+
+      function updateParticleSpread(delta) {
+        const difference = particleSpreadTarget - particleSpread;
+        if (Math.abs(difference) < 0.0005) return;
+
+        const response = 1 - Math.exp(-delta / 82);
+        particleSpread += difference * response;
+        if (Math.abs(particleSpreadTarget - particleSpread) < 0.0008) {
+          particleSpread = particleSpreadTarget;
+        }
+
+        const spread = particleSpread;
+        const swirlAngle = Math.sin(spread * Math.PI) * 0.62;
+        const cos = Math.cos(swirlAngle);
+        const sin = Math.sin(swirlAngle);
+        const wobble = Math.sin(spread * Math.PI) * 0.18;
+
+        for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+          const offset = i * 3;
+          const baseX = homePositions[offset] + (cloudPositions[offset] - homePositions[offset]) * spread;
+          const baseY = homePositions[offset + 1] + (cloudPositions[offset + 1] - homePositions[offset + 1]) * spread;
+          const baseZ = homePositions[offset + 2] + (cloudPositions[offset + 2] - homePositions[offset + 2]) * spread;
+          const phaseAngle = phases[i] * TAU + spread * 3.4;
+
+          positions[offset] = baseX * cos - baseZ * sin + Math.cos(phaseAngle) * wobble;
+          positions[offset + 1] = baseY + Math.sin(phaseAngle * 1.7) * wobble * 0.72;
+          positions[offset + 2] = baseX * sin + baseZ * cos + Math.sin(phaseAngle) * wobble;
+        }
+
+        positionAttribute.needsUpdate = true;
+      }
+
+      function updateIntro(now) {
+        const elapsed = now - introStart;
+        const introLength = 2550;
+        let stillMoving = false;
+
+        for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+          const offset = i * 3;
+          const delay = introDelays[i] * 520;
+          const progress = Math.max(0, Math.min(1, (elapsed - delay) / introLength));
+          if (progress < 1) stillMoving = true;
+          const eased = easeOutQuint(progress);
+          const swirl = (1 - eased) * (0.8 + introDelays[i] * 3.4);
+          const angle = phases[i] * TAU + eased * 2.4;
+          positions[offset] = introPositions[offset] + (homePositions[offset] - introPositions[offset]) * eased + Math.cos(angle) * swirl;
+          positions[offset + 1] = introPositions[offset + 1] + (homePositions[offset + 1] - introPositions[offset + 1]) * eased + Math.sin(angle) * swirl * 0.7;
+          positions[offset + 2] = introPositions[offset + 2] + (homePositions[offset + 2] - introPositions[offset + 2]) * eased + Math.sin(angle * 1.7) * swirl * 0.6;
+        }
+
+        positionAttribute.needsUpdate = true;
+        if (!stillMoving) {
+          positions.set(homePositions);
+          positionAttribute.needsUpdate = true;
+          introComplete = true;
+        }
+      }
+
+      function updateScene(now, delta) {
+        coreMaterial.uniforms.uTime.value = now;
+        haloMaterial.uniforms.uTime.value = now;
+        backdropMaterial.uniforms.uTime.value = now * 0.55;
+        burstStrength *= Math.pow(0.91, delta / 16.67);
+        if (burstStrength < 0.001) burstStrength = 0;
+        coreMaterial.uniforms.uBurst.value = burstStrength;
+        haloMaterial.uniforms.uBurst.value = burstStrength;
+
+        if (!introComplete) {
+          updateIntro(now);
+          const introProgress = Math.min(1, (now - introStart) / 3200);
+          heartGroup.rotation.y = -1.02 + introProgress * 1.02;
+          heartGroup.rotation.x = -0.1 - Math.sin(introProgress * Math.PI) * 0.05;
+        } else {
+          idleTime += delta;
+          if (!paused) {
+            rotationAngle += delta * 0.00021;
+            manualVelocity *= Math.pow(0.91, delta / 16.67);
+            manualSpin += manualVelocity * delta * 0.00075;
+          }
+
+          manualTilt = damp(manualTilt, manualTiltTarget, 145, delta);
+          gestureX = damp(gestureX, gestureTargetX, 64, delta);
+          gestureTilt = damp(gestureTilt, gestureTargetTilt, 72, delta);
+          gestureScale = damp(gestureScale, gestureTargetScale, 82, delta);
+          gestureMoveX = damp(gestureMoveX, gestureTargetMoveX, 72, delta);
+          gestureMoveY = damp(gestureMoveY, gestureTargetMoveY, 72, delta);
+          gestureMoveZ = damp(gestureMoveZ, gestureTargetMoveZ, 86, delta);
+          gestureRoll = damp(gestureRoll, gestureTargetRoll, 76, delta);
+          const cameraOffsetTarget = 0;
+          heartGroup.position.x = damp(heartGroup.position.x, cameraOffsetTarget + gestureMoveX, 92, delta);
+          heartGroup.position.y = damp(heartGroup.position.y, -0.8 + gestureMoveY, 92, delta);
+          heartGroup.position.z = damp(heartGroup.position.z, gestureMoveZ, 108, delta);
+          const pulse = 1 + Math.sin(idleTime * 0.0022) * 0.012 + burstStrength * 0.035;
+          heartGroup.scale.setScalar(pulse * gestureScale);
+          heartGroup.rotation.y = rotationAngle + manualSpin + gestureX;
+          heartGroup.rotation.x = -0.12 + Math.sin(idleTime * 0.0006) * 0.035 + manualTilt + gestureTilt;
+          heartGroup.rotation.z = Math.sin(idleTime * 0.0005) * 0.018 + gestureRoll;
+
+          if (!paused) {
+            updateParticleSpread(delta);
+          }
+        }
+
+        backdrop.rotation.y = -rotationAngle * 0.08;
+        backdrop.rotation.z = Math.sin(idleTime * 0.0001) * 0.025;
+      }
+
+      function render(now) {
+        requestAnimationFrame(render);
+        const delta = Math.min(40, now - lastFrame || 16.67);
+        lastFrame = now;
+        if (!pageVisible) return;
+        if (introComplete && !adaptiveQualityApplied) {
+          performanceSampleTime += delta;
+          performanceSampleCount += 1;
+          if (performanceSampleCount >= 120) {
+            const averageFrameTime = performanceSampleTime / performanceSampleCount;
+            if (averageFrameTime > 22) {
+              haloPoints.visible = false;
+              backdrop.visible = false;
+              renderer.setPixelRatio(Math.min(renderer.getPixelRatio(), 1.25));
+              renderer.setSize(window.innerWidth, window.innerHeight, false);
+            }
+            adaptiveQualityApplied = true;
+          }
+        }
+        if (!paused || !introComplete) updateScene(now, delta);
+        renderer.render(scene, camera);
+      }
+
+      function resize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.fov = width < 640 ? 43 : 39;
+        camera.position.z = width < 640 ? 20.5 : 22;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        renderer.setSize(width, height, false);
+        coreMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+        haloMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+        backdropMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+      }
+
+      function setCameraActive(active) {
+        cameraActive = Boolean(active);
+        if (cameraActive) {
+          performanceSampleTime = 0;
+          performanceSampleCount = 0;
+          adaptiveQualityApplied = false;
+        }
+        cameraButton.classList.toggle("is-active", cameraActive);
+        cameraButton.setAttribute("aria-pressed", String(cameraActive));
+        cameraButton.setAttribute("aria-label", cameraActive ? "关闭手势控制" : "启用手势控制");
+        cameraButton.title = cameraActive ? "关闭手势控制" : "启用手势控制";
+        sceneElement.classList.toggle("camera-on", cameraActive);
+        readoutMain.textContent = cameraActive ? "Gesture interaction" : "Particle morphology";
+        cameraStatus.textContent = cameraActive ? "camera on" : "camera off";
+        gestureLaunchLabel.textContent = cameraActive ? "手势已开启" : "手势交互";
+        gestureLaunchHint.textContent = cameraActive ? "CAMERA ON" : "ENABLE CAMERA";
+        if (!cameraActive) {
+          gestureActive = false;
+          gestureTargetX = 0;
+          gestureTargetY = 0;
+          gestureTargetTilt = 0;
+          gestureTargetScale = 1;
+          cameraHud.classList.remove("is-tracking");
+          gestureStateElement.textContent = "STANDBY";
+        }
+      }
+
+      function getFullscreenElement() {
+        return document.fullscreenElement || document.webkitFullscreenElement || null;
+      }
+
+      function updateFullscreenUi(active) {
+        fullscreenButton.classList.toggle("is-fullscreen", active);
+        fullscreenButton.setAttribute("aria-pressed", String(active));
+        fullscreenButton.setAttribute("aria-label", active ? "退出全屏" : "进入全屏");
+        fullscreenButton.title = active ? "退出全屏" : "进入全屏";
+        sceneElement.classList.toggle("pseudo-fullscreen", active && !getFullscreenElement());
+      }
+
+      async function toggleFullscreen() {
+        const active = getFullscreenElement() === sceneElement;
+        try {
+          if (active) {
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
+            updateFullscreenUi(false);
+            return;
+          }
+
+          if (sceneElement.requestFullscreen) {
+            await sceneElement.requestFullscreen({ navigationUI: "hide" });
+            updateFullscreenUi(true);
+            return;
+          }
+          if (sceneElement.webkitRequestFullscreen) {
+            sceneElement.webkitRequestFullscreen();
+            updateFullscreenUi(true);
+            return;
+          }
+
+          const pseudoActive = !sceneElement.classList.contains("pseudo-fullscreen");
+          sceneElement.classList.toggle("pseudo-fullscreen", pseudoActive);
+          updateFullscreenUi(pseudoActive);
+          notify(pseudoActive ? "已进入沉浸模式" : "已退出沉浸模式");
+        } catch {
+          const pseudoActive = !sceneElement.classList.contains("pseudo-fullscreen");
+          sceneElement.classList.toggle("pseudo-fullscreen", pseudoActive);
+          updateFullscreenUi(pseudoActive);
+          notify(pseudoActive ? "已进入沉浸模式" : "已退出沉浸模式");
+        }
+      }
+
+      function openGestureDialog(title, message, linkLabel = "打开正确地址", linkHref = "http://127.0.0.1:4173/") {
+        gestureDialogTitle.textContent = title;
+        gestureDialogMessage.textContent = message;
+        gestureOpenCorrectLink.textContent = linkLabel;
+        gestureOpenCorrectLink.href = linkHref;
+        gestureDialog.classList.add("is-open");
+        gestureDialogBackdrop.classList.add("is-open");
+        gestureDialog.setAttribute("aria-hidden", "false");
+        gestureDialogClose.focus({ preventScroll: true });
+      }
+
+      function closeGestureDialog() {
+        gestureDialog.classList.remove("is-open");
+        gestureDialogBackdrop.classList.remove("is-open");
+        gestureDialog.setAttribute("aria-hidden", "true");
+      }
+
+      window.addEventListener("particleheart:gesture-error", (event) => {
+        const detail = event.detail || {};
+        openGestureDialog(
+          detail.title || "手势控制无法启动",
+          detail.message || "请刷新页面后重试。",
+          detail.linkLabel || "重新加载页面",
+          detail.linkHref || location.href
+        );
+      });
+
+      function requestGestureToggle() {
+        if (location.protocol === "file:") {
+          openGestureDialog(
+            "需要通过本地链接打开",
+            "当前是本地文件模式，浏览器会阻止手势模块和摄像头加载。请打开下面的地址，再点击手势交互。",
+            "打开 http://127.0.0.1:4173/",
+            "http://127.0.0.1:4173/"
+          );
+          return;
+        }
+
+        if (!gestureModuleReady) {
+          pendingGestureRequest = true;
+          window.clearTimeout(pendingGestureTimer);
+          pendingGestureTimer = window.setTimeout(() => {
+            if (!gestureModuleReady) {
+              pendingGestureRequest = false;
+              openGestureDialog(
+                "手势模块加载失败",
+                "页面资源没有完整加载。请刷新页面；如果仍然失败，请确认本地服务正在运行。",
+                "重新加载页面",
+                location.href
+              );
+            }
+          }, 1800);
+          readoutMain.textContent = "Gesture module loading";
+          cameraStatus.textContent = "loading";
+          return;
+        }
+
+        window.dispatchEvent(new CustomEvent("particleheart:gesture-toggle"));
+      }
+
+      window.addEventListener("particleheart:gesture-ready", () => {
+        gestureModuleReady = true;
+        window.clearTimeout(pendingGestureTimer);
+        gestureLaunchButton.classList.remove("is-unavailable");
+        gestureLaunchLabel.textContent = cameraActive ? "手势已开启" : "手势交互";
+        gestureLaunchHint.textContent = cameraActive ? "CAMERA ON" : "ENABLE CAMERA";
+        if (pendingGestureRequest) {
+          pendingGestureRequest = false;
+          window.dispatchEvent(new CustomEvent("particleheart:gesture-toggle"));
+        }
+      });
+
+      if (location.protocol === "file:") {
+        gestureLaunchButton.classList.add("is-unavailable");
+        gestureLaunchLabel.textContent = "需要本地链接";
+        gestureLaunchHint.textContent = "OPEN LOCALHOST";
+      }
+
+      function setGestureState(nextState) {
+        if (!nextState || !nextState.active) {
+          gestureActive = false;
+          gestureTargetX = 0;
+          gestureTargetY = 0;
+          gestureTargetTilt = 0;
+          gestureTargetScale = 1;
+          gestureTargetMoveX = 0;
+          gestureTargetMoveY = 0;
+          gestureTargetMoveZ = 0;
+          gestureTargetRoll = 0;
+          cameraHud.classList.remove("is-tracking");
+          return;
+        }
+
+        gestureActive = true;
+        const x = clamp(nextState.x || 0, -1.25, 1.25);
+        const y = clamp(nextState.y || 0, -1, 1);
+        const z = clamp(nextState.z || 0, -1, 1);
+        const depth = clamp(nextState.depth || 0, -1, 1);
+        const roll = clamp(nextState.roll || 0, -1, 1);
+        gestureTargetX = x * 0.86;
+        gestureTargetY = y;
+        gestureTargetTilt = y * 0.38;
+        gestureTargetRoll = roll * 0.42;
+        gestureTargetMoveX = x * 0.62;
+        gestureTargetMoveY = y * 0.48;
+        gestureTargetMoveZ = clamp(z * 0.55 + depth * 0.9, -1.25, 1.25);
+        const pinch = clamp(nextState.pinch || 0, 0, 1);
+        const open = clamp(nextState.open || 0, 0, 1);
+        gestureTargetScale = clamp(1 + open * 0.065 - pinch * 0.15 + depth * 0.08, 0.72, 1.14);
+        cameraHud.classList.add("is-tracking");
+        gestureStateElement.textContent = nextState.label || "TRACKING";
+      }
+
+      function notify(message) {
+        readoutMain.textContent = message;
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+          readoutMain.textContent = cameraActive ? "Gesture interaction" : "Particle morphology";
+          cameraStatus.textContent = cameraActive ? "camera on" : "camera off";
+        }, 2600);
+        cameraStatus.textContent = "notice";
+      }
+
+      function setPaused(nextPaused) {
+        paused = nextPaused;
+        pauseButton.classList.toggle("is-paused", paused);
+        pauseButton.setAttribute("aria-label", paused ? "继续动画" : "暂停动画");
+        pauseButton.title = paused ? "继续动画" : "暂停动画";
+        if (!paused) {
+          lastFrame = performance.now();
+        }
+      }
+
+      function togglePanel(forceOpen) {
+        const shouldOpen = typeof forceOpen === "boolean"
+          ? forceOpen
+          : !mechanismPanel.classList.contains("is-open");
+        mechanismPanel.classList.toggle("is-open", shouldOpen);
+        mechanismPanel.setAttribute("aria-hidden", String(!shouldOpen));
+        infoButton.setAttribute("aria-expanded", String(shouldOpen));
+        if (shouldOpen) {
+          pausedBeforePanel = paused;
+          setPaused(true);
+          closePanelButton.focus({ preventScroll: true });
+        } else {
+          setPaused(pausedBeforePanel);
+        }
+      }
+
+      window.ParticleHeart = Object.freeze({
+        setParticleSpread,
+        setHandOpenness,
+        getParticleSpread: () => particleSpread,
+        getSpatialState: () => ({
+          position: [heartGroup.position.x, heartGroup.position.y, heartGroup.position.z],
+          rotation: [heartGroup.rotation.x, heartGroup.rotation.y, heartGroup.rotation.z],
+          scale: heartGroup.scale.x
+        }),
+        burst: (strength = 0.6) => {
+          burstStrength = Math.max(burstStrength, clamp(Number(strength) || 0.6, 0, 1.2));
+        },
+        setPaused,
+        setCameraActive,
+        setGestureState,
+        notify,
+        isReady: () => introComplete
+      });
+
+      pauseButton.addEventListener("click", () => setPaused(!paused));
+      fullscreenButton.addEventListener("click", toggleFullscreen);
+      cameraButton.addEventListener("click", requestGestureToggle);
+      gestureLaunchButton.addEventListener("click", requestGestureToggle);
+      gestureDialogClose.addEventListener("click", closeGestureDialog);
+      gestureDialogBackdrop.addEventListener("click", closeGestureDialog);
+      infoButton.addEventListener("click", () => togglePanel());
+      closePanelButton.addEventListener("click", () => {
+        togglePanel(false);
+        infoButton.focus({ preventScroll: true });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (!document.body.classList.contains("is-unlocked")) return;
+        if (
+          event.key.toLowerCase() === "f" &&
+          !["INPUT", "SELECT", "TEXTAREA"].includes(event.target.tagName) &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.altKey
+        ) {
+          event.preventDefault();
+          toggleFullscreen();
+        }
+        if (event.key === "Escape" && gestureDialog.classList.contains("is-open")) {
+          closeGestureDialog();
+        }
+        if (event.key === "Escape" && mechanismPanel.classList.contains("is-open")) {
+          closePanelButton.click();
+        }
+        if (event.code === "Space" && event.target === document.body) {
+          event.preventDefault();
+          setPaused(!paused);
+        }
+      });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        pointerDown = true;
+        pointerMoved = false;
+        pointerStartX = event.clientX;
+        pointerStartY = event.clientY;
+        pointerLastX = event.clientX;
+        pointerLastY = event.clientY;
+        canvas.setPointerCapture(event.pointerId);
+        canvas.classList.add("is-dragging");
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        if (!pointerDown) return;
+        const deltaX = event.clientX - pointerLastX;
+        const deltaY = event.clientY - pointerLastY;
+        if (Math.abs(event.clientX - pointerStartX) + Math.abs(event.clientY - pointerStartY) > 4) {
+          pointerMoved = true;
+        }
+        manualSpin += deltaX * 0.006;
+        manualVelocity = deltaX * 0.32;
+        manualTiltTarget = Math.max(-0.45, Math.min(0.45, manualTiltTarget + deltaY * 0.003));
+        pointerLastX = event.clientX;
+        pointerLastY = event.clientY;
+      });
+
+      function releasePointer(event) {
+        if (!pointerDown) return;
+        pointerDown = false;
+        canvas.classList.remove("is-dragging");
+        if (canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+        if (!pointerMoved && introComplete) {
+          burstStrength = Math.max(burstStrength, 0.34);
+        }
+      }
+
+      canvas.addEventListener("pointerup", releasePointer);
+      canvas.addEventListener("pointercancel", releasePointer);
+      canvas.addEventListener("dblclick", toggleFullscreen);
+      document.addEventListener("fullscreenchange", () => {
+        updateFullscreenUi(getFullscreenElement() === sceneElement);
+      });
+      document.addEventListener("webkitfullscreenchange", () => {
+        updateFullscreenUi(getFullscreenElement() === sceneElement);
+      });
+      window.addEventListener("resize", resize);
+      document.addEventListener("visibilitychange", () => {
+        pageVisible = !document.hidden;
+        lastFrame = performance.now();
+      });
+
+      resize();
+      requestAnimationFrame(render);
+    })();
+  </script>
+  <script src="./gallery.js"></script>
+</body>
+</html>
