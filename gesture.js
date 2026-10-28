@@ -1207,11 +1207,22 @@ window.addEventListener("particleheart:unlocked", () => {
 }, { once: true });
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw-cleanup.js", { updateViaCache: "none" }).catch((error) => {
-      console.warn("[gesture] Service worker registration failed.", error);
+  const cleanupKey = "particle-heart-sw-cleanup-v5";
+  if (navigator.serviceWorker.controller) {
+    const alreadyReloaded = sessionStorage.getItem(cleanupKey) === "reloaded";
+    sessionStorage.setItem(cleanupKey, "reloaded");
+    Promise.all([
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister()))),
+      caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+    ]).finally(() => {
+      if (!alreadyReloaded) {
+        window.location.reload();
+      }
     });
-  }, { once: true });
+  } else {
+    sessionStorage.removeItem(cleanupKey);
+  }
 }
 
 if (new URLSearchParams(window.location.search).has("test")) {
