@@ -1,3 +1,4 @@
+// Versioned filename so an older active Worker can be replaced immediately.
 const CACHE_NAME = "particle-heart-runtime-v4";
 const RUNTIME_PATHS = [
   "/vision_bundle.mjs",

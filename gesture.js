@@ -1208,7 +1208,7 @@ window.addEventListener("particleheart:unlocked", () => {
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch((error) => {
+    navigator.serviceWorker.register("./sw-v4.js", { updateViaCache: "none" }).catch((error) => {
       console.warn("[gesture] Service worker registration failed.", error);
     });
   }, { once: true });
