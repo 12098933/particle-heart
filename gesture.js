@@ -204,7 +204,10 @@ function preloadGestureRuntime() {
     preloadWasmRuntime(),
     preloadModel()
   ]).then(([, wasmPath, modelPath]) => {
-    detectionAssetPaths = { wasmPath, modelPath };
+    detectionAssetPaths = {
+      wasmPath: wasmPath.replace(/\/+$/, ""),
+      modelPath
+    };
   }).catch((error) => {
     runtimePreloadPromise = null;
     console.warn("[gesture] Runtime preload failed.", error);
