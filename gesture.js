@@ -49,6 +49,7 @@ let detectorDelegate = "CPU";
 let preferCpuDelegate = false;
 let cpuFallbackAttempted = false;
 let runtimePreloadPromise = null;
+let detectionAssetPaths = null;
 let detectionWorker = null;
 let workerReady = false;
 let workerBusy = false;
@@ -112,15 +113,15 @@ function reportGestureProblem(title, message) {
   }));
 }
 
-async function fetchGestureAsset(url, label) {
+async function fetchGestureAsset(url, label, attempts = 2) {
   let lastError = null;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    const timeout = window.setTimeout(() => controller.abort(), 18000);
     try {
       setGestureLabel(`FETCH ${label}`, false);
       const response = await fetch(url, {
-        cache: "reload",
+        cache: "default",
         signal: controller.signal
       });
       if (!response.ok) {
@@ -133,8 +134,8 @@ async function fetchGestureAsset(url, label) {
       return;
     } catch (error) {
       lastError = error;
-      if (attempt < 3) {
-        await new Promise((resolve) => window.setTimeout(resolve, 450 * attempt));
+      if (attempt < attempts) {
+        await new Promise((resolve) => window.setTimeout(resolve, 350 * attempt));
       }
     } finally {
       window.clearTimeout(timeout);
@@ -146,7 +147,10 @@ async function fetchGestureAsset(url, label) {
 function preloadGestureRuntime() {
   if (runtimePreloadPromise) return runtimePreloadPromise;
   const bundleUrl = new URL("./vision_bundle.mjs", import.meta.url).href;
-  const wasmBaseUrl = new URL("./wasm/", import.meta.url);
+  const localRoot = new URL("./", import.meta.url).href;
+  const localWasmBase = new URL("./wasm/", import.meta.url).href;
+  const cdnRoot = "https://fastly.jsdelivr.net/gh/12098933/particle-heart@main/";
+  const backupCdnRoot = "https://gcore.jsdelivr.net/gh/12098933/particle-heart@main/";
   const simdProbe = new Uint8Array([
     0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0,
     10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11
@@ -158,13 +162,50 @@ function preloadGestureRuntime() {
     supportsSimd = false;
   }
   const wasmName = supportsSimd ? "vision_wasm_internal" : "vision_wasm_nosimd_internal";
+  const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const wasmSources = isLocalHost
+    ? [localWasmBase, `${cdnRoot}wasm/`, `${backupCdnRoot}wasm/`]
+    : [`${cdnRoot}wasm/`, `${backupCdnRoot}wasm/`, localWasmBase];
+  const modelSources = isLocalHost
+    ? [`${localRoot}hand_landmarker.task`, `${cdnRoot}hand_landmarker.task`, `${backupCdnRoot}hand_landmarker.task`]
+    : [`${cdnRoot}hand_landmarker.task`, `${backupCdnRoot}hand_landmarker.task`, `${localRoot}hand_landmarker.task`];
+
+  async function preloadWasmRuntime() {
+    let lastError = null;
+    for (const baseUrl of wasmSources) {
+      try {
+        await Promise.all([
+          fetchGestureAsset(`${baseUrl}${wasmName}.js`, "LOADER"),
+          fetchGestureAsset(`${baseUrl}${wasmName}.wasm`, "WASM")
+        ]);
+        return baseUrl;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("WASM_PRELOAD_FAILED");
+  }
+
+  async function preloadModel() {
+    let lastError = null;
+    for (const url of modelSources) {
+      try {
+        await fetchGestureAsset(url, "MODEL");
+        return url;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("MODEL_PRELOAD_FAILED");
+  }
 
   runtimePreloadPromise = Promise.all([
     fetchGestureAsset(bundleUrl, "RUNTIME"),
-    fetchGestureAsset(new URL(`./${wasmName}.js`, wasmBaseUrl).href, "LOADER"),
-    fetchGestureAsset(new URL(`./${wasmName}.wasm`, wasmBaseUrl).href, "WASM"),
-    fetchGestureAsset(new URL("./hand_landmarker.task", import.meta.url).href, "MODEL")
-  ]).catch((error) => {
+    preloadWasmRuntime(),
+    preloadModel()
+  ]).then(([, wasmPath, modelPath]) => {
+    detectionAssetPaths = { wasmPath, modelPath };
+  }).catch((error) => {
     runtimePreloadPromise = null;
     console.warn("[gesture] Runtime preload failed.", error);
   });
@@ -173,8 +214,8 @@ function preloadGestureRuntime() {
 
 async function createLandmarker() {
   const moduleUrl = new URL("./vision_bundle.mjs", import.meta.url).href;
-  const wasmUrl = new URL("./wasm", import.meta.url).href;
-  const modelUrl = new URL("./hand_landmarker.task", import.meta.url).href;
+  const wasmUrl = detectionAssetPaths?.wasmPath || new URL("./wasm", import.meta.url).href;
+  const modelUrl = detectionAssetPaths?.modelPath || new URL("./hand_landmarker.task", import.meta.url).href;
   const { FilesetResolver, HandLandmarker } = await import(moduleUrl);
   const visionFiles = await FilesetResolver.forVisionTasks(wasmUrl);
   const delegates = preferCpuDelegate ? ["CPU"] : ["GPU", "CPU"];
@@ -303,8 +344,8 @@ function ensureDetectionWorker() {
     worker.postMessage({
       type: "init",
       bundlePath: new URL("./vision_bundle.mjs", import.meta.url).href,
-      wasmPath: new URL("./wasm", import.meta.url).href,
-      modelPath: new URL("./hand_landmarker.task", import.meta.url).href
+      wasmPath: detectionAssetPaths?.wasmPath || new URL("./wasm", import.meta.url).href,
+      modelPath: detectionAssetPaths?.modelPath || new URL("./hand_landmarker.task", import.meta.url).href
     });
   }).catch((error) => {
     workerInitPromise = null;
